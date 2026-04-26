@@ -14,7 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          address: string
+          certificate_urls: string[]
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          owner_id: string
+          since: number | null
+          timings: string | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          certificate_urls?: string[]
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          owner_id: string
+          since?: number | null
+          timings?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          certificate_urls?: string[]
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          owner_id?: string
+          since?: number | null
+          timings?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      token_purchases: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          patient_image_url: string | null
+          status: string
+          token_number: number
+          tokens_day_id: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          patient_image_url?: string | null
+          status?: string
+          token_number: number
+          tokens_day_id: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          patient_image_url?: string | null
+          status?: string
+          token_number?: number
+          tokens_day_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_purchases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_purchases_tokens_day_id_fkey"
+            columns: ["tokens_day_id"]
+            isOneToOne: false
+            referencedRelation: "tokens_day"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tokens_day: {
+        Row: {
+          company_id: string
+          created_at: string
+          current_token: number
+          day: string
+          estimated_minutes_per_token: number
+          id: string
+          is_allowed: boolean
+          total_tokens: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          current_token?: number
+          day?: string
+          estimated_minutes_per_token?: number
+          id?: string
+          is_allowed?: boolean
+          total_tokens: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          current_token?: number
+          day?: string
+          estimated_minutes_per_token?: number
+          id?: string
+          is_allowed?: boolean
+          total_tokens?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tokens_day_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +186,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "company" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +313,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["company", "user"],
+    },
   },
 } as const
