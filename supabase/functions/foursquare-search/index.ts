@@ -21,12 +21,25 @@ Deno.serve(async (req) => {
     const key = Deno.env.get('FOURSQUARE_API_KEY');
     if (!key) return json({ results: [], error: 'Address search is not configured' });
 
-    const fsq = await fetch(
-      `https://api.foursquare.com/v3/places/search?query=${encodeURIComponent(q)}&limit=8`,
-      { headers: { Authorization: key, Accept: 'application/json' } },
-    );
+    // Try the new Foursquare Places API (v2025) first; fall back to legacy v3
+    const tryFetch = async (endpoint: string, headers: Record<string, string>) =>
+      fetch(`${endpoint}?query=${encodeURIComponent(q)}&limit=8`, { headers });
+
+    let fsq = await tryFetch('https://places-api.foursquare.com/places/search', {
+      Authorization: `Bearer ${key}`,
+      'X-Places-Api-Version': '2025-06-17',
+      Accept: 'application/json',
+    });
+    if (fsq.status === 401 || fsq.status === 403) {
+      // Legacy v3 fallback (older API keys)
+      fsq = await tryFetch('https://api.foursquare.com/v3/places/search', {
+        Authorization: key,
+        Accept: 'application/json',
+      });
+    }
     if (!fsq.ok) {
-      await fsq.text().catch(() => '');
+      const body = await fsq.text().catch(() => '');
+      console.error('Foursquare error', fsq.status, body);
       return json({
         results: [],
         error: fsq.status === 401 || fsq.status === 403
