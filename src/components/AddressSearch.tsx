@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2, MapPin } from "lucide-react";
 
 export type AddressPick = { address: string; latitude: number; longitude: number; name?: string };
@@ -18,18 +17,19 @@ export default function AddressSearch({ value, onChange }: { value: AddressPick 
     t.current = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke("foursquare-search", {
-          method: "GET" as any,
-        });
-        // fallback: use direct fetch with query param since invoke doesn't pass query strings
         const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/foursquare-search?q=${encodeURIComponent(q)}`;
         const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
         });
         const json = await res.json();
         setResults(json.results || []);
         setOpen(true);
-        void data; void error;
+      } catch {
+        setResults([]);
+        setOpen(false);
       } finally { setLoading(false); }
     }, 300);
   }, [q]);
